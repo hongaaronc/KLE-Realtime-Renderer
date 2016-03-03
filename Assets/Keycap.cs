@@ -22,7 +22,8 @@ public class Keycap : MonoBehaviour {
         transform.position = new Vector3(0.5f * (w - 1) + x, 0, 0.5f * (h - 1) + y);
 
         //Scale
-        transform.localScale = new Vector3(w, 1, h);
+        //transform.localScale = new Vector3(w, 1, h);
+        GetComponentInChildren<KeycapSizer>().Resize(-w, h);
 
         //Color
         c = c.TrimStart("#\" ".ToCharArray());
