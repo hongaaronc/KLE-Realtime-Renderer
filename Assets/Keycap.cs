@@ -5,6 +5,7 @@ public class Keycap : MonoBehaviour {
     public string[] rawData;
 
     public string contents;
+    public bool d = false;
     public float defaultX = 0;
     public float defaultY = 0;
     public float x = 0;

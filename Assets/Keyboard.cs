@@ -10,13 +10,9 @@ public class Keyboard : MonoBehaviour {
     private Keycap lastKeycap;
 
 	void Start () {
-        string[] rows = data.Split("[".ToCharArray(), System.StringSplitOptions.RemoveEmptyEntries);
-        string[] newRows = new string[rows.Length];
-        for (int i=0; i<rows.Length; i++)
-        {
-            newRows[i] = rows[i].Replace("], ", "").Replace("]", "");
-        }
-        rows = newRows;
+        string[] rows = data.Split(new[] { "], [" }, System.StringSplitOptions.RemoveEmptyEntries);
+        rows[0] = rows[0].Substring(1);
+        rows[rows.Length - 1] = rows[rows.Length - 1].Substring(0, rows[rows.Length-1].Length-1);
         for (int i=0; i<rows.Length; i++) {
             GameObject newRowGO = new GameObject("Row" + i);
             newRowGO.transform.parent = transform;
@@ -31,13 +27,13 @@ public class Keyboard : MonoBehaviour {
                 //Check for multiple properties
                 if (keys[j].StartsWith("{") && !keys[j].EndsWith("}"))
                 {
-                    j++;
-                    while (!keys[j].EndsWith("}"))
+                    while (j < keys.Length)
                     {
-                        newKey += "," + keys[j];
                         j++;
+                        newKey += "," + keys[j];
+                        if (keys[j].EndsWith("}"))
+                            break;
                     }
-                    newKey += "," + keys[j];
                 }
                 newKeys.Add(newKey);
             }
