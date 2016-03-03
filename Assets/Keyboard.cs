@@ -12,7 +12,7 @@ public class Keyboard : MonoBehaviour {
 	void Start () {
         string[] rows = data.Split(new[] { "], [" }, System.StringSplitOptions.RemoveEmptyEntries);
         rows[0] = rows[0].Substring(1);
-        rows[rows.Length - 1] = rows[rows.Length - 1].Substring(0, rows[rows.Length-1].Length-1);
+        rows[rows.Length - 1] = rows[rows.Length - 1].Substring(0, rows[rows.Length-1].Length-2);
         for (int i=0; i<rows.Length; i++) {
             GameObject newRowGO = new GameObject("Row" + i);
             newRowGO.transform.parent = transform;
@@ -47,15 +47,17 @@ public class Keyboard : MonoBehaviour {
                     GameObject newKeycap = (GameObject)Instantiate(keycapPrefab, Vector3.zero, Quaternion.identity);
                     newKeycap.transform.parent = newRowGO.transform;
                     Keycap newKeycapProperties = newKeycap.GetComponent<Keycap>();
-                    newKeycapProperties.contents = keys[j+1].Replace("\"", "");
+                    newKeycapProperties.contents = keys[j + 1].Replace("\"", "");
                     //Set default properties
                     SetDefaultProperties(newKeycapProperties, j == 0);
 
                     //Read in new properties
                     string newKeyString = keys[j].Replace("{", "").Replace("}", "");
                     string[] properties = newKeyString.Split(",".ToCharArray());
-                    newKeycapProperties.rawData = properties;
-                    
+
+                    newKeycapProperties.rawData = keys[j];
+                    newKeycapProperties.rawProperties = properties;
+
                     //Set new properties
                     foreach (string property in properties)
                     {
@@ -74,9 +76,11 @@ public class Keyboard : MonoBehaviour {
                         }
                     }
                     lastKeycap = newKeycapProperties;
+                    lastKeycap.Calculate();
+
                     j++;
                 }
-                else if (keys[j].StartsWith("\"") && keys[j].EndsWith("\""))
+                else
                 {
                     //Create new keycap
                     GameObject newKeycap = (GameObject)Instantiate(keycapPrefab, Vector3.zero, Quaternion.identity);
@@ -86,7 +90,10 @@ public class Keyboard : MonoBehaviour {
                     //Set default properties
                     SetDefaultProperties(newKeycapProperties, j == 0);
 
+                    newKeycapProperties.rawData = keys[j];
+
                     lastKeycap = newKeycapProperties;
+                    lastKeycap.Calculate();
                 }
             }
         }
@@ -97,17 +104,15 @@ public class Keyboard : MonoBehaviour {
         if (lastKeycap == null)
             return;
 
-        lastKeycap.Calculate();
-
         if (newLine)
         {
             keycapProperties.defaultX = 0.0f;
-            keycapProperties.defaultY = lastKeycap.y + 1.0f;
+            keycapProperties.defaultY = lastKeycap.actualY + 1.0f;
         }
         else
         {
-            keycapProperties.defaultX = lastKeycap.x + lastKeycap.w;
-            keycapProperties.defaultY = lastKeycap.y;
+            keycapProperties.defaultX = lastKeycap.actualX + lastKeycap.w;
+            keycapProperties.defaultY = lastKeycap.actualY;
         }
         keycapProperties.c = lastKeycap.c;
     }

@@ -2,12 +2,15 @@
 using System.Collections;
 
 public class Keycap : MonoBehaviour {
-    public string[] rawData;
+    public string rawData;
+    public string[] rawProperties;
 
     public string contents;
     public bool d = false;
     public float defaultX = 0;
     public float defaultY = 0;
+    public float actualX = 0;
+    public float actualY = 0;
     public float x = 0;
     public float y = 0;
     public float w = 1;
@@ -16,11 +19,11 @@ public class Keycap : MonoBehaviour {
 
 	void Start () {
         //Flip horizontally
-        x *= -1;
+        actualX *= -1;
         w *= -1;
 
         //Position
-        transform.position = new Vector3(0.5f * (w - 1) + x, 0, 0.5f * (h - 1) + y);
+        transform.position = new Vector3(0.5f * (w - 1) + actualX, 0, 0.5f * (h - 1) + actualY);
 
         //Scale
         //transform.localScale = new Vector3(w, 1, h);
@@ -41,7 +44,7 @@ public class Keycap : MonoBehaviour {
 
     public void Calculate()
     {
-        x += defaultX;
-        y += defaultY;
+        actualX = defaultX + x;
+        actualY = defaultY + y;
     }
 }
