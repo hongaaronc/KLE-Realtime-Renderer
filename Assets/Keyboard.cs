@@ -8,94 +8,124 @@ public class Keyboard : MonoBehaviour {
     public GameObject keycapPrefab;
 
     private Keycap lastKeycap;
+    private ArrayList rows = new ArrayList();
 
 	void Start () {
-        string[] rows = data.Split(new[] { "], [" }, System.StringSplitOptions.RemoveEmptyEntries);
-        rows[0] = rows[0].Substring(1);
-        rows[rows.Length - 1] = rows[rows.Length - 1].Substring(0, rows[rows.Length-1].Length-2);
-        for (int i=0; i<rows.Length; i++) {
-            GameObject newRowGO = new GameObject("Row" + i);
-            newRowGO.transform.parent = transform;
-            string[] keys = rows[i].Split(",".ToCharArray(), System.StringSplitOptions.RemoveEmptyEntries);
-
-            //Reformat keys
-            ArrayList newKeys = new ArrayList();
-            for (int j = 0; j < keys.Length; j++)
+        Stack brackets = new Stack();
+        bool firstKeyInRow = false;
+        Keycap newPropertiesToSet = null;
+        int endIndex = 0;
+        int beginIndex = 0;
+        while (endIndex < data.Length)
+        {
+            string checkChar = data.Substring(endIndex, 1);
+            if (checkChar == "[")
             {
-                string newKey = keys[j];
-
-                //Check for multiple properties
-                if (keys[j].StartsWith("{") && !keys[j].EndsWith("}"))
+                if (brackets.Count == 0)
                 {
-                    while (j < keys.Length)
-                    {
-                        j++;
-                        newKey += "," + keys[j];
-                        if (keys[j].EndsWith("}"))
-                            break;
-                    }
+                    brackets.Push(checkChar);
+                    beginIndex = endIndex + 1;
+                    //Create new row
+                    GameObject newRow = new GameObject("Row" + rows.Count);
+                    newRow.transform.parent = transform;
+                    rows.Add(newRow);
+
+                    firstKeyInRow = true;
                 }
-                newKeys.Add(newKey);
             }
-            keys = new string[newKeys.Count];
-            newKeys.CopyTo(keys);
-            for (int j = 0; j < keys.Length; j++)
+            else if (checkChar == "]")
             {
-                if (keys[j].StartsWith("{") && keys[j].EndsWith("}"))
+                if ((string)brackets.Peek() == "[")
                 {
-                    //Create new keycap
-                    GameObject newKeycap = (GameObject)Instantiate(keycapPrefab, Vector3.zero, Quaternion.identity);
-                    newKeycap.transform.parent = newRowGO.transform;
-                    Keycap newKeycapProperties = newKeycap.GetComponent<Keycap>();
-                    newKeycapProperties.contents = keys[j + 1].Replace("\"", "");
-                    //Set default properties
-                    SetDefaultProperties(newKeycapProperties, j == 0);
+                    brackets.Pop();
+                }
+            }
+            else if (checkChar == "{")
+            {
+                if ((string)brackets.Peek() == "[")
+                {
+                    brackets.Push(checkChar);
+                    beginIndex = endIndex + 1;
+                }
+            }
+            else if (checkChar == "}")
+            {
+                if ((string)brackets.Peek() == "{")
+                {
+                    brackets.Pop();
+                    //Create new key
+                    GameObject newKey = (GameObject)Instantiate(keycapPrefab, Vector3.zero, Quaternion.identity);
+                    newKey.transform.parent = ((GameObject)rows[rows.Count - 1]).transform;
+                    newPropertiesToSet = newKey.GetComponent<Keycap>();
 
-                    //Read in new properties
-                    string newKeyString = keys[j].Replace("{", "").Replace("}", "");
-                    string[] properties = newKeyString.Split(",".ToCharArray());
+                    //Create new properties
+                    string propertiesString = data.Substring(beginIndex, endIndex-beginIndex);
+                    string[] properties = propertiesString.Split(",".ToCharArray());
 
-                    newKeycapProperties.rawData = keys[j];
-                    newKeycapProperties.rawProperties = properties;
+                    SetDefaultProperties(newPropertiesToSet, firstKeyInRow);
+                    firstKeyInRow = false;
+                    newPropertiesToSet.rawData = propertiesString;
+                    newPropertiesToSet.rawProperties = properties;
 
                     //Set new properties
                     foreach (string property in properties)
                     {
-                        System.Reflection.FieldInfo member = newKeycapProperties.GetType().GetField(property.Split(":".ToCharArray())[0]);
+                        System.Reflection.FieldInfo member = newPropertiesToSet.GetType().GetField(property.Split(":".ToCharArray())[0]);
                         if (member != null)
                         {
                             System.Type valueType = member.FieldType;
                             string valueString = property.Split(":".ToCharArray())[1];
                             TypeConverter tc = TypeDescriptor.GetConverter(valueType);
                             object valueObj = tc.ConvertFromString(valueString);
-                            member.SetValue(newKeycapProperties, valueObj);
+                            member.SetValue(newPropertiesToSet, valueObj);
                         }
                         else
                         {
                             print("Could not find property: " + property);
                         }
                     }
-                    lastKeycap = newKeycapProperties;
-                    lastKeycap.Calculate();
 
-                    j++;
-                }
-                else
-                {
-                    //Create new keycap
-                    GameObject newKeycap = (GameObject)Instantiate(keycapPrefab, Vector3.zero, Quaternion.identity);
-                    newKeycap.transform.parent = newRowGO.transform;
-                    Keycap newKeycapProperties = newKeycap.GetComponent<Keycap>();
-                    newKeycapProperties.contents = keys[j].Replace("\"", "");
-                    //Set default properties
-                    SetDefaultProperties(newKeycapProperties, j == 0);
-
-                    newKeycapProperties.rawData = keys[j];
-
-                    lastKeycap = newKeycapProperties;
-                    lastKeycap.Calculate();
+                    lastKeycap = newPropertiesToSet;
                 }
             }
+            else if (checkChar == "\"")
+            {
+                if ((string)brackets.Peek() == "\"")
+                {
+                    if (data.Substring(endIndex - 1, 1) != "\\" || data.Substring(endIndex - 2, 2) == "\\\\")
+                    {
+                        brackets.Pop();
+                        if (newPropertiesToSet == null)
+                        {
+                            //Create new key
+                            GameObject newKey = (GameObject)Instantiate(keycapPrefab, Vector3.zero, Quaternion.identity);
+                            newKey.transform.parent = ((GameObject)rows[rows.Count - 1]).transform;
+                            Keycap newKeycapProperties = newKey.GetComponent<Keycap>();
+
+                            //Set default properties
+                            SetDefaultProperties(newKeycapProperties, firstKeyInRow);
+                            firstKeyInRow = false;
+
+                            newKeycapProperties.rawData = data.Substring(beginIndex, endIndex - beginIndex);
+
+                            lastKeycap = newKeycapProperties;
+                        }
+                        else
+                        {
+                            lastKeycap = newPropertiesToSet;
+                            newPropertiesToSet = null;
+                        }
+                        lastKeycap.contents = data.Substring(beginIndex, endIndex - beginIndex);
+                        lastKeycap.Calculate();
+                    }
+                }
+                else if ((string)brackets.Peek() == "[")
+                {
+                    brackets.Push(checkChar);
+                    beginIndex = endIndex + 1;
+                }
+            }
+            endIndex++;
         }
 	}
 
