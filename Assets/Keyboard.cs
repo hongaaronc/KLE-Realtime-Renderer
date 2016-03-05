@@ -20,7 +20,7 @@ public class Keyboard : MonoBehaviour {
     void Update()
     {
         mouseDeltaPosition = Input.mousePosition - lastMousePosition;
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(1))
         {
             transform.Rotate(Vector3.up, -20f * mouseDeltaPosition.x * Time.deltaTime);
         }
