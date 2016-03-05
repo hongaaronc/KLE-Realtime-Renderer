@@ -2,6 +2,17 @@
 using System.Collections;
 
 public class Keycap : MonoBehaviour {
+    //Settings
+    public float keyTravelTime = 0.025f;
+    public float keyTravelDistance = 0.2f;
+    public bool interactive = true;
+
+    //Private variables
+    private Vector3 velocity = Vector3.zero;
+    private Vector3 restingPosition = Vector3.zero;
+    private Vector3 targetPosition = Vector3.zero;
+
+    //Properties
     public string rawData;
     public string[] rawProperties;
 
@@ -23,7 +34,7 @@ public class Keycap : MonoBehaviour {
         w *= -1;
 
         //Position
-        transform.position = new Vector3(0.5f * (w - 1) + actualX, 0, 0.5f * (h - 1) + actualY);
+        transform.localPosition = new Vector3(0.5f * (w - 1) + actualX, 0, 0.5f * (h - 1) + actualY);
 
         //Scale
         //transform.localScale = new Vector3(w, 1, h);
@@ -40,11 +51,37 @@ public class Keycap : MonoBehaviour {
         {
             renderer.material.color = newColor;
         }
+
+        restingPosition = transform.localPosition;
 	}
+
+    void Update()
+    {
+        if (interactive)
+        {
+            try
+            {
+                if (Input.GetKey((KeyCode)System.Enum.Parse(typeof(KeyCode), contents)))
+                {
+                    targetPosition = restingPosition - keyTravelDistance * Vector3.up;
+                }
+                else
+                {
+                    targetPosition = restingPosition;
+                }
+                transform.localPosition = Vector3.SmoothDamp(transform.localPosition, targetPosition, ref velocity, keyTravelTime);
+            }
+            catch {
+                interactive = false;
+            };
+        }
+    }
 
     public void Calculate()
     {
         actualX = defaultX + x;
         actualY = defaultY + y;
+        restingPosition = transform.localPosition;
+        targetPosition = restingPosition;
     }
 }
