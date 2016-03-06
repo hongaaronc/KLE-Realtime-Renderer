@@ -41,7 +41,7 @@ public class Keycap : MonoBehaviour {
         transform.Translate(new Vector3(0.5f * (w - 1) + actualX + rx, 0, 0.5f * (h - 1) + actualY + ry));
 
         //Rotation
-        transform.RotateAround(new Vector3(rx - 0.5f, 0, ry - 0.5f), Vector3.up, r);
+        transform.RotateAround(transform.parent.position + new Vector3(rx - 0.5f, 0, ry - 0.5f), Vector3.up, r);
 
         //Scale
         //transform.localScale = new Vector3(w, 1, h);  //Simple scaling

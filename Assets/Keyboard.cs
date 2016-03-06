@@ -182,11 +182,10 @@ public class Keyboard : MonoBehaviour {
             else if (checkChar == "\\")
             {
                 brackets.Push(checkChar);
-                beginIndex = endIndex + 1;
             }
             endIndex++;
         }
-        //container.transform.localPosition = new Vector3(-xBounds.x + (xBounds.y - xBounds.x) / 2, 0, yBounds.x - (yBounds.y - yBounds.x) / 2);
+        container.transform.localPosition = new Vector3(-xBounds.x + (xBounds.y - xBounds.x) / 2, 0, yBounds.x - (yBounds.y - yBounds.x) / 2);
 	}
 
     void TransferProperties(Keycap keycapProperties, Keycap lastKeycap)
