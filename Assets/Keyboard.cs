@@ -35,6 +35,7 @@ public class Keyboard : MonoBehaviour {
     }
 
 	public void ParseData () {
+        transform.rotation = Quaternion.identity;
         Destroy(container);
         Keycap lastKeycap = null;
         ArrayList rows = new ArrayList();
