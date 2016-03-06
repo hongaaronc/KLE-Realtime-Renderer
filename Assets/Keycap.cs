@@ -54,7 +54,12 @@ public class Keycap : MonoBehaviour {
         foreach (Renderer renderer in renderers)
         {
             renderer.material.color = newColor;
+            //Description
+            if (d) {
+                renderer.enabled = false;
+            }
         }
+
 
         restingPosition = transform.localPosition;
 	}
