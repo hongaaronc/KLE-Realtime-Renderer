@@ -22,7 +22,8 @@ public class Keyboard : MonoBehaviour {
         mouseDeltaPosition = Input.mousePosition - lastMousePosition;
         if (Input.GetMouseButton(1))
         {
-            transform.RotateAround(Vector3.up, -mouseDeltaPosition.x * 0.002f);
+            transform.Rotate(Vector3.up, -mouseDeltaPosition.x * 0.2f);
+            transform.RotateAround(Vector3.right, -mouseDeltaPosition.y * 0.002f);
         }
         lastMousePosition = Input.mousePosition;
     }
