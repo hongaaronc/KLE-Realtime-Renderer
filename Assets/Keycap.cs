@@ -26,26 +26,30 @@ public class Keycap : MonoBehaviour {
     public float y = 0;
     public float w = 1;
     public float h = 1;
+    public float r = 0;
+    public float rx = 0;
+    public float ry = 0;
     public string c = "#FFFFFF";
 
 	void Start () {
         //Flip horizontally
         actualX *= -1;
         w *= -1;
+        rx *= -1;
 
         //Position
-        transform.localPosition = new Vector3(0.5f * (w - 1) + actualX, 0, 0.5f * (h - 1) + actualY);
+        transform.Translate(new Vector3(0.5f * (w - 1) + actualX + rx, 0, 0.5f * (h - 1) + actualY + ry));
+
+        //Rotation
+        transform.RotateAround(new Vector3(rx - 0.5f, 0, ry - 0.5f), Vector3.up, r);
 
         //Scale
-        //transform.localScale = new Vector3(w, 1, h);
-        GetComponentInChildren<KeycapSizer>().Resize(-w, h);
+        //transform.localScale = new Vector3(w, 1, h);  //Simple scaling
+        GetComponentInChildren<KeycapSizer>().Resize(-w, h);    //Procedural scaling
 
         //Color
         c = c.TrimStart("#\" ".ToCharArray());
-        byte r = byte.Parse(c.Substring(0,2), System.Globalization.NumberStyles.HexNumber);
-	    byte g = byte.Parse(c.Substring(2,2), System.Globalization.NumberStyles.HexNumber);
-	    byte b = byte.Parse(c.Substring(4,2), System.Globalization.NumberStyles.HexNumber);
-        Color newColor = new Color32(r,g,b,255);
+        Color newColor = new Color32(byte.Parse(c.Substring(0, 2), System.Globalization.NumberStyles.HexNumber), byte.Parse(c.Substring(2, 2), System.Globalization.NumberStyles.HexNumber), byte.Parse(c.Substring(4, 2), System.Globalization.NumberStyles.HexNumber), 255);
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         foreach (Renderer renderer in renderers)
         {
@@ -54,6 +58,13 @@ public class Keycap : MonoBehaviour {
 
         restingPosition = transform.localPosition;
 	}
+
+    void OnDrawGizmos()
+    {
+        rx *= -1;
+        Gizmos.DrawCube(new Vector3(rx - 0.5f, 0, ry - 0.5f), Vector3.one * 1f);
+        rx *= -1;
+    }
 
     void Update()
     {

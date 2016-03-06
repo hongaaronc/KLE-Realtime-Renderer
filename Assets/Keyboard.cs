@@ -104,8 +104,9 @@ public class Keyboard : MonoBehaviour {
                     string propertiesString = data.Substring(beginIndex, endIndex - beginIndex);
                     string[] properties = propertiesString.Split(",".ToCharArray());
 
-                    SetDefaultProperties(newPropertiesToSet, firstKeyInRow, lastKeycap);
-                    firstKeyInRow = false;
+
+                    TransferProperties(newPropertiesToSet, lastKeycap);
+
                     newPropertiesToSet.rawData = propertiesString;
                     newPropertiesToSet.rawProperties = properties;
 
@@ -127,6 +128,10 @@ public class Keyboard : MonoBehaviour {
                         }
                     }
 
+                    //Set default properties
+                    SetDefaultProperties(newPropertiesToSet, firstKeyInRow, lastKeycap);
+                    firstKeyInRow = false;
+
                     lastKeycap = newPropertiesToSet;
                 }
             }
@@ -142,11 +147,13 @@ public class Keyboard : MonoBehaviour {
                         newKey.transform.parent = ((GameObject)rows[rows.Count - 1]).transform;
                         Keycap newKeycapProperties = newKey.GetComponent<Keycap>();
 
+                        TransferProperties(newKeycapProperties, lastKeycap);
+
+                        newKeycapProperties.rawData = data.Substring(beginIndex, endIndex - beginIndex);
+
                         //Set default properties
                         SetDefaultProperties(newKeycapProperties, firstKeyInRow, lastKeycap);
                         firstKeyInRow = false;
-
-                        newKeycapProperties.rawData = data.Substring(beginIndex, endIndex - beginIndex);
 
                         lastKeycap = newKeycapProperties;
                     }
@@ -179,8 +186,19 @@ public class Keyboard : MonoBehaviour {
             }
             endIndex++;
         }
-        container.transform.localPosition = new Vector3(-xBounds.x + (xBounds.y - xBounds.x) / 2, 0, yBounds.x - (yBounds.y - yBounds.x) / 2);
+        //container.transform.localPosition = new Vector3(-xBounds.x + (xBounds.y - xBounds.x) / 2, 0, yBounds.x - (yBounds.y - yBounds.x) / 2);
 	}
+
+    void TransferProperties(Keycap keycapProperties, Keycap lastKeycap)
+    {
+        if (lastKeycap == null)
+            return;
+
+        keycapProperties.r = lastKeycap.r;
+        keycapProperties.rx = lastKeycap.rx;
+        keycapProperties.ry = lastKeycap.ry;
+        keycapProperties.c = lastKeycap.c;
+    }
 
     void SetDefaultProperties(Keycap keycapProperties, bool newLine, Keycap lastKeycap)
     {
@@ -197,6 +215,16 @@ public class Keyboard : MonoBehaviour {
             keycapProperties.defaultX = lastKeycap.actualX + lastKeycap.w;
             keycapProperties.defaultY = lastKeycap.actualY;
         }
-        keycapProperties.c = lastKeycap.c;
+
+        if (keycapProperties.rx != lastKeycap.rx)
+        {
+            keycapProperties.defaultX = 0.0f;
+            keycapProperties.defaultY = 0.0f;
+        }
+        if (keycapProperties.ry != lastKeycap.ry)
+        {
+            keycapProperties.defaultX = 0.0f;
+            keycapProperties.defaultY = 0.0f;
+        }
     }
 }
