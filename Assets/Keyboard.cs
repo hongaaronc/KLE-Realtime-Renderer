@@ -22,7 +22,7 @@ public class Keyboard : MonoBehaviour {
         mouseDeltaPosition = Input.mousePosition - lastMousePosition;
         if (Input.GetMouseButton(1))
         {
-            transform.Rotate(Vector3.up, -20f * mouseDeltaPosition.x * Time.deltaTime);
+            transform.RotateAround(Vector3.up, -mouseDeltaPosition.x * 0.002f);
         }
         lastMousePosition = Input.mousePosition;
     }
@@ -41,6 +41,8 @@ public class Keyboard : MonoBehaviour {
         container = new GameObject("container");
         container.transform.parent = transform;
         container.transform.localPosition = Vector3.zero;
+        Vector2 xBounds = Vector2.zero;
+        Vector2 yBounds = Vector2.zero;
 
         Stack brackets = new Stack();
         bool firstKeyInRow = false;
@@ -153,6 +155,14 @@ public class Keyboard : MonoBehaviour {
                     }
                     lastKeycap.contents = data.Substring(beginIndex, endIndex - beginIndex);
                     lastKeycap.Calculate();
+                    if (lastKeycap.actualX < xBounds.x)
+                        xBounds.x = lastKeycap.actualX;
+                    if (lastKeycap.actualX > xBounds.y)
+                        xBounds.y = lastKeycap.actualX;
+                    if (lastKeycap.actualY < yBounds.x)
+                        yBounds.x = lastKeycap.actualY;
+                    if (lastKeycap.actualY > yBounds.y)
+                        yBounds.y = lastKeycap.actualY;
                 }
                 else if ((string)brackets.Peek() == "[")
                 {
@@ -167,6 +177,7 @@ public class Keyboard : MonoBehaviour {
             }
             endIndex++;
         }
+        container.transform.localPosition = new Vector3(-xBounds.x + (xBounds.y - xBounds.x) / 2, 0, yBounds.x - (yBounds.y - yBounds.x) / 2);
 	}
 
     void SetDefaultProperties(Keycap keycapProperties, bool newLine, Keycap lastKeycap)
