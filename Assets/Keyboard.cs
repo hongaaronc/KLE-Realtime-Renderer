@@ -186,6 +186,7 @@ public class Keyboard : MonoBehaviour {
             endIndex++;
         }
         container.transform.localPosition = new Vector3(-xBounds.x + (xBounds.y - xBounds.x) / 2, 0, yBounds.x - (yBounds.y - yBounds.x) / 2);
+        
 	}
 
     void TransferProperties(Keycap keycapProperties, Keycap lastKeycap)

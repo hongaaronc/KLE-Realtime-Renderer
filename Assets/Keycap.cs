@@ -60,7 +60,15 @@ public class Keycap : MonoBehaviour {
             }
         }
 
+        //Contents
+        string parsedContents = contents.Replace("\n", System.Environment.NewLine).Replace("\"", "\"").Replace("\'", "\'");
+        TextMesh[] textMeshes = GetComponentsInChildren<TextMesh>();
+        foreach (TextMesh textMesh in textMeshes)
+        {
+            textMesh.text = parsedContents;
+        }
 
+        //Interactivity
         restingPosition = transform.localPosition;
 	}
 
